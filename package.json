@@ -19,6 +19,7 @@
   "homepage": "https://github.com/trunicz/chatweb#readme",
   "dependencies": {
     "express": "^4.18.2",
+    "formidable": "^2.1.1",
     "gun": "^0.8.9",
     "gun-level": "^6.0.4"
   },

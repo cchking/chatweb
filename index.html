@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Mensajería P2P con Gun.js</title>
+  <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+  <script>
+    // Conexión con el cliente-servidor inicial
+    const peerServer = 'http://localhost:5858/gun';
+
+    // Conexión con la base de datos Gun.js
+    const gun = Gun(peerServer);
+
+    // Obtener una referencia a la base de datos de mensajes
+    const messagesDB = gun.get('messages');
+
+    // Función para enviar un mensaje
+    function sendMessage() {
+      const message = document.getElementById('message').value;
+
+      // Guardar el mensaje en la base de datos
+      const timestamp = Date.now();
+      const messageId = `message-${timestamp}`;
+
+      messagesDB.get(messageId).put({
+        id: messageId,
+        message,
+        timestamp,
+      });
+
+      console.log('Mensaje enviado:', messageId);
+    }
+
+    // Función para recibir mensajes
+    function receiveMessages() {
+      // Obtener todos los mensajes de la base de datos
+      messagesDB.map().once((message, messageId) => {
+        console.log('Mensaje recibido:', message);
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <h1>Mensajería P2P con Gun.js</h1>
+  <div>
+    <label for="message">Mensaje:</label>
+    <input type="text" id="message" placeholder="Escribe tu mensaje">
+  </div>
+  <button onclick="sendMessage()">Enviar</button>
+  <button onclick="receiveMessages()">Ver mensajes</button>
+</body>
+
+</html>
