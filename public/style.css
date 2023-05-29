@@ -1,0 +1,27 @@
+#chat {
+  width: 400px;
+  margin: 0 auto;
+}
+
+#messages {
+  height: 300px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  overflow-y: scroll;
+}
+
+#message-form {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+#message-input {
+  flex: 1;
+  margin-right: 5px;
+}
+
+#message-input,
+button {
+  padding: 5px;
+}
