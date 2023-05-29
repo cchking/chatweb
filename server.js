@@ -7,7 +7,6 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 const connectedServers = new Set();
-
 io.on('connection', (socket) => {
   console.log('Usuario conectado:', socket.id);
 
