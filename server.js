@@ -5,6 +5,18 @@ const socketIO = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
+const path = require('path');
+const os = require('os');
+
+// ...
+
+const networkInterfaces = os.networkInterfaces();
+const ipAddress = networkInterfaces['Ethernet'].find(interface => interface.family === 'IPv4').address;
+
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 const connectedServers = new Set();
 io.on('connection', (socket) => {
@@ -23,5 +35,5 @@ io.on('connection', (socket) => {
 });
 
 server.listen(8000, () => {
-  console.log('Servidor escuchando en el puerto 3000');
+  console.log(`Servidor escuchando en http://${ipAddress}:8000`)
 });
