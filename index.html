@@ -3,15 +3,16 @@
 
 <head>
   <title>Mensajería P2P con Gun.js</title>
-  <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script> -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script> -->
+  <script src="node_modules/gun/gun.js"></script>
   <script>
     // Conexión con el cliente-servidor inicial
 
     // Conexión con la base de datos Gun.js
-    const gun = Gun('http://localhost:8080/gun');
-    const peerxd = {peers: ['http://localhost:3030/gun']}
-    gun.opt(peerxd)
+    const gun = Gun('http://192.168.1.201:8080/gun');
+    // const peerxd = {peers: ['http://localhost:3030/gun']}
+    // gun.opt(peerxd)
 
     function updatePeers(){
       gun.opt(document.querySelector('#peer').value)
