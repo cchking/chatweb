@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
-const port = 5858
+// const port = Math.floor(Math.random() * (3000 - 6001) + 6001)
+const port = 8080
 const Gun = require('gun')
 
 app.use(Gun.serve)
