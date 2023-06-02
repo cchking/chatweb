@@ -7,11 +7,15 @@
   <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
   <script>
     // Conexión con el cliente-servidor inicial
-    const peerServer = 'http://localhost:8080/gun';
 
     // Conexión con la base de datos Gun.js
-    const gun = Gun(peerServer);
-    gun.opt({peers:['http://localhost:3030/gun']})
+    const gun = Gun('http://localhost:8080/gun');
+    const peerxd = {peers: ['http://localhost:3030/gun']}
+    gun.opt(peerxd)
+
+    function updatePeers(){
+      gun.opt(document.querySelector('#peer').value)
+    }
 
     // Obtener una referencia a la base de datos de mensajes
     const messagesDB = gun.get('messages');
@@ -80,6 +84,11 @@
   <button onclick="sendMessage()">Enviar</button>
   <button onclick="receiveMessages()">Ver mensajes</button>
   <button onclick="getPeers()">get peers</button>
+
+  <div>
+    <input type="text" name="peer" id="peer">
+    <button onclick="updatePeers()">Update Peers</button>
+  </div>
 </body>
 
 </html>
