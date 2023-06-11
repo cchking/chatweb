@@ -2,239 +2,246 @@
 <html>
 
 <head>
+  <meta charset="UTF-8">
   <title>Mensajería P2P con Gun.js</title>
   <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-  <!-- <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script> -->
-  <!-- <script src="node_modules/gun/gun.js"></script> -->
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f5f5f5;
-    }
-  
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-  
-    h1 {
-      text-align: center;
-      color: #25D366;
-    }
-  
-    .form-container {
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-  
-    .form-container h2 {
-      margin-bottom: 20px;
-    }
-  
-    .form-container label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-  
-    .form-container input[type="text"],
-    .form-container input[type="password"] {
-      width: 100%;
-      padding: 10px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
-    }
-  
-    .form-container button {
-      padding: 10px 20px;
-      background-color: #25D366;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-  
-    .message-container {
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-    }
-  
-    .message-container h2 {
-      margin-bottom: 20px;
-    }
-  
-    .message-input-container {
-      display: flex;
-      margin-bottom: 10px;
-    }
-  
-    .message-input-container input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-  
-    .message-input-container button {
-      padding: 10px 20px;
-      background-color: #25D366;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      margin-left: 10px;
-      cursor: pointer;
-    }
-  
-    .message-list {
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
-    }
-  
-    .message-item {
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #ccc;
-    }
-  
-    .message-item .username {
-      font-weight: bold;
-      color: #25D366;
-    }
-  
-    .message-item .timestamp {
-      font-size: 0.8em;
-      color: #888;
-    }
-  </style>
+  <script src="https://unpkg.com/vue@next"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.17/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-900">
+  <div id="app" class="flex mx-auto h-screen justify-center px-72">
+    <div v-if="loggedIn" class="w-1/3 mt-24">
+      <div v-if="connectedUsers" class="connected-users bg-gray-800 p-6 rounded-lg mt-8"
+        v-if="loggedIn && connectedUsers.length > 0">
+        <h2 class="text-2xl text-white font-bold mb-4">Usuarios conectados</h2>
+        <div class="flex -space-x-1 overflow-hidden">
+          <img v-for="user in connectedUsers" :title="user" :src="'https://avatars.dicebear.com/api/bottts/'+ user +'.svg'"
+            class="inline-block h-6 w-6 rounded-full ring-2 ring-white">
+        </div>
+      </div>
+    </div>
+    <div class="w-full flex flex-col justify-center items-center">
+      <h1 class="text-4xl text-white font-bold mb-8"><span class="text-2xl">i</span>Message</h1>
+
+      <div class="form w-2/3 bg-gray-800 p-6 rounded-lg">
+        <div v-if="loggedIn">
+          <div class="flex justify-center flex-wrap items-center mb-3">
+            <h2 class="text-2xl text-white text-center font-bold mb-4 w-full">Bienvenido, {{ username }}!</h2>
+            <button @click="logout" class=" w-full p-2 bg-red-500 text-white rounded-lg">Logout</button>
+          </div>
+          <div class="bg-gray-900 p-5 rounded-xl ">
+            <h3 class="text-lg text-white font-bold">Agrega una conexión</h3>
+            <input v-model="peer" type="text" placeholder="Ingresa el peer"
+              class="w-full p-2 rounded-lg mt-2 bg-gray-700 text-white">
+            <button @click="updatePeers" class="p-2 w-full mt-4 bg-green-500 text-white rounded-lg">Actualizar
+              Peers</button>
+          </div>
+        </div>
+        <div v-else>
+          <h2 class="text-2xl text-center text-white font-bold mb-4">Entrar al chat</h2>
+          <div>
+            <label for="username" class="text-lg text-white font-bold">Nombre de usuario:</label>
+            <input v-model="username" type="text" placeholder="Ingresa tu usuario"
+              class="w-full p-2 rounded-lg mt-2 bg-gray-700 text-white">
+          </div>
+          <div>
+            <button @click="registerUser" class="w-full p-2 mt-4 bg-green-500 text-white rounded-lg">Entrar</button>
+          </div>
+          <br>
+        </div>
+      </div>
+
+      <div class="message bg-gray-800 w-2/3 p-6 rounded-lg mt-8" v-if="loggedIn">
+        <h2 class="text-2xl text-white font-bold mb-4">Mensajes</h2>
+
+        <div class="message-input flex flex-wrap items-center justify-center gap-2">
+          <input v-model="message" type="text" placeholder="Escribe tu mensaje"
+            class="p-2 w-full rounded-lg bg-gray-700 text-white mb-2">
+          <button @click="sendMessage" class="p-2 w-5/12 bg-green-500 text-white rounded-lg">Enviar</button>
+          <button @click="getPeers" class="p-2 w-5/12 bg-green-500 text-white rounded-lg">Obtener peers</button>
+          <button @click="clearMessages" class="p-2 w-5/12 bg-green-500 text-white rounded-lg">Limpiar</button>
+        </div>
+
+        <div v-if="error" class="bg-red-500 bg-opacity-50 my-4 border-4 border-red-500 p-4 rounded-lg text-white">
+          <h3 class="text-xl text-bold">{{error.title}}</h3>
+          <p class="text-sm">{{error.mensaje}}</p>
+        </div>
+        <ul class="message-list mt-4 h-44 overflow-y-scroll">
+          <li class="message-item" v-for="message in sortedMessages">
+            <div class="message">
+              <span class="username text-lg font-bold text-green-500 mr-2">{{ message.username }}</span>
+              <span class="timestamp text-sm text-gray-400">{{ formatTimestamp(message.timestamp) }}</span>
+            </div>
+            <div class="message-content text-white">
+              {{ message.content }}
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Conexión con el cliente-servidor inicial
-
-    // Conexión con la base de datos Gun.js
-    const gun = Gun('http://172.20.10.6:8080/gun');
-    // const peerxd = {peers: ['http://localhost:3030/gun']}
-    // gun.opt(peerxd)
-
-    function updatePeers(){
-      gun.opt(document.querySelector('#peer').value)
-    }
-
-    // Obtener una referencia a la base de datos de mensajes
+    const gun = Gun();
     const messagesDB = gun.get('messages');
     const usersDB = gun.get('users');
 
-    function registerUser() {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+    const app = Vue.createApp({
+      data() {
+        return {
+          username: '',
+          password: '',
+          message: '',
+          peer: '',
+          ip: '192.128.68.1',
+          error: '',
+          loggedIn: false,
+          messages: [],
+          connectedUsers: [],
+        };
+      },
+      mounted() {
+        if (localStorage.getItem('username')) {
+          this.loggedIn = true;
+          this.username = localStorage.getItem('username')
 
-      usersDB.get(username).put({
-        username: username,
-        password: password,
-      });
-    }
+          messagesDB.map().once((message, messageId) => {
+            if (message !== null) {
+              this.messages.push({
+                username: message.username,
+                timestamp: message.timestamp,
+                content: message.message,
+              });
+              console.log('Mensaje recibido:', message);
+            }
+          });
+          this.messages.sort((a, b) => b.timestamp - a.timestamp)
+        }
 
-    function getPeers() {
-      const peers = gun.back('opt.peers');
-      console.log(peers);
-    }
+        usersDB.map().on((user, username) => {
+          if (user !== null && username !== this.username) {
+            this.connectedUsers.push(username);
+          } else {
+            const index = this.connectedUsers.indexOf(username);
+            if (index > -1) {
+              this.connectedUsers.splice(index, 1);
+            }
+          }
+        });
+      },
+      methods: {
+        updatePeers() {
+          gun.opt(this.peer);
+        },
+        registerUser() {
+          usersDB.get(this.username).put({
+            username: this.username,
+            password: this.password,
+          });
+          localStorage.setItem('username', this.username)
+          this.loggedIn = true;
+          this.connectedUsers.push(localStorage.getItem('username')); // Añade esta línea
+          window.location.reload();
+        },
+        logout() {
+          if (localStorage.getItem('username')) {
+            usersDB.get(this.username).put(null);  // Agregar esta línea para borrar el usuario
+            localStorage.removeItem('username');
+            this.loggedIn = false;
+          }
+          window.location.reload();
+        },
 
-    // Función para enviar un mensaje
-    function sendMessage() {
-      const message = document.getElementById('message').value;
-      const username = document.getElementById('username').value;
+        getPeers() {
+          const peers = gun.back('opt.peers');
+          console.log(peers);
+        },
+        sendMessage() {
+          if (this.message !== '') {
+            const timestamp = Date.now();
+            const rand = Math.floor(Math.random() * (0 - 9999) + 9999)
+            const messageId = `MSG-${rand}`;
 
-      // Guardar el mensaje en la base de datos
-      const timestamp = Date.now();
-      const rand = Math.floor(Math.random() * (0 - 9999) + 9999)
-      const messageId = `MSG-${rand}`;
+            messagesDB.get(messageId).put({
+              id: messageId,
+              message: this.message,
+              username: this.username,
+              timestamp,
+            }).set(usersDB.get(this.username));
 
-      messagesDB.get(messageId).put({
-        id: messageId,
-        message,
-        username,
-        timestamp,
-      }).set(usersDB.get(username));
+            console.log('Mensaje enviado:', messageId);
+            this.error = ''
+          } else {
+            this.error = {
+              title: 'Error, no hay mensaje',
+              mensaje: 'No hay ninguna informacion que mandar'
+            }
+          }
+        },
+        clearMessages() {
+          // Obtener todos los mensajes
+          gun.get('messages').map().once((message, messageId) => {
+            // Poner el valor de cada mensaje a null
+            gun.get('messages').get(messageId).put(null);
+          });
 
-      console.log('Mensaje enviado:', messageId);
-    }
+        },
+        formatTimestamp(timestamp) {
+          const currentTime = Date.now();
+          const diffSeconds = Math.floor((currentTime - timestamp) / 1000);
 
-    // Función para recibir mensajes
-    function receiveMessages() {
-      // Obtener todos los mensajes de la base de datos
-      messagesDB.map().once((message, messageId) => {
-        console.log('Mensaje recibido:', message);
-      });
-    }
+          if (diffSeconds < 60) {
+            return 'Hace menos de 1 minuto';
+          }
+
+          const diffMinutes = Math.floor(diffSeconds / 60);
+
+          if (diffMinutes < 60) {
+            return `Hace ${diffMinutes} ${diffMinutes === 1 ? 'minuto' : 'minutos'}`;
+          }
+
+          const diffHours = Math.floor(diffMinutes / 60);
+
+          if (diffHours < 24) {
+            return `Hace ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`;
+          }
+
+          const diffDays = Math.floor(diffHours / 24);
+
+          if (diffDays < 30) {
+            return `Hace ${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
+          }
+
+          const diffMonths = Math.floor(diffDays / 30);
+
+          if (diffMonths < 12) {
+            return `Hace ${diffMonths} ${diffMonths === 1 ? 'mes' : 'meses'}`;
+          }
+
+          const diffYears = Math.floor(diffMonths / 12);
+          return `Hace ${diffYears} ${diffYears === 1 ? 'año' : 'años'}`;
+        },
+        /* clearAllUsers() {
+          usersDB.map().once((user, username) => {
+            usersDB.get(username).put(null);
+          });
+          this.connectedUsers = [];
+        }, */
+        getUserImage(username) {
+          const seed = username?.toLowerCase();
+          return `https://avatars.dicebear.com/api/bottts/${seed}.svg`;
+        },
+      },
+      computed: {
+        sortedMessages() {
+          return this.messages.sort((a, b) => b.timestamp - a.timestamp);
+        }
+      },
+    });
+
+    app.mount('#app');
   </script>
-</head>
-
-<body>
-  <div class="container">
-    <h1>Mensajería P2P con Gun.js</h1>
-
-    <div class="form-container">
-      <h2>Iniciar sesión / Registrarse</h2>
-      <form>
-        <div>
-          <label for="username">Usuario:</label>
-          <input type="text" id="username" placeholder="Ingresa tu usuario">
-        </div>
-        <div>
-          <label for="password">Contraseña:</label>
-          <input type="password" id="password" placeholder="Ingresa tu contraseña">
-        </div>
-        <div>
-          <button onclick="registerUser()">Registrar</button>
-        </div>
-      </form>
-      <br>
-      <div>
-        <input type="text" name="peer" id="peer" placeholder="Ingresa el peer">
-        <button onclick="updatePeers()">Actualizar Peers</button>
-      </div>
-
-    </div>
-
-    <div class="message-container">
-      <h2>Mensajes</h2>
-
-      <div class="message-input-container">
-        <input type="text" id="message" placeholder="Escribe tu mensaje">
-        <button onclick="sendMessage()">Enviar</button>
-        <button onclick="receiveMessages()">Ver mensajes</button>
-        <button onclick="getPeers()">Obtener peers</button>
-      </div>
-      <ul class="message-list">
-        <li class="message-item">
-          <div class="message">
-            <span class="username">Usuario 1</span>
-            <span class="timestamp">2 horas atrás</span>
-          </div>
-          <div class="message-content">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod dolor a cursus lacinia.
-          </div>
-        </li>
-        <li class="message-item">
-          <div class="message">
-            <span class="username">Usuario 2</span>
-            <span class="timestamp">1 hora atrás</span>
-          </div>
-          <div class="message-content">
-            Proin vitae ex et est vulputate finibus in vel ipsum. Curabitur id nunc massa.
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
 </body>
 
 </html>
