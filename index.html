@@ -86,7 +86,7 @@
   </div>
 
   <script>
-    const gun = Gun('http://localhost:8080/gun');
+    const gun = Gun('http://172.20.10.6:8080/gun');
     const messagesDB = gun.get('messages');
     const usersDB = gun.get('users');
 
@@ -109,7 +109,7 @@
           this.loggedIn = true;
           this.username = localStorage.getItem('username')
 
-          messagesDB.map().once((message, messageId) => {
+          messagesDB.map().on((message, messageId) => {
             if (message !== null) {
               this.messages.push({
                 username: message.username,
@@ -187,7 +187,7 @@
         },
         clearMessages() {
           // Obtener todos los mensajes
-          gun.get('messages').map().once((message, messageId) => {
+          gun.get('messages').map().on((message, messageId) => {
             // Poner el valor de cada mensaje a null
             gun.get('messages').get(messageId).put(null);
           });
